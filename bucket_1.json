@@ -1,0 +1,44 @@
+[
+    {
+    "major_code": "CPS",
+    "college": "Engineering",
+    "total_credits": 120,
+    "gpa_gate": {
+        "critical_tracking_min": 2.5,
+        "uf_cumulative_min": 2.0
+    },
+    "technical_electives": {
+        "total_required": 18,
+        "cise_dept_min": 14,
+        "breadth_dept_max": 4,
+        "primary_dept": "Computer & Information Science & Engineering",
+        "breadth_depts": [
+        "Mathematics",
+        "Statistics",
+        "Physics",
+        "Electrical & Computer Engineering"
+        ],
+        "explicit_allowed_codes": ["EEL3701C", "EEL4744C", "EGN4912", "EGN4951", "MAP2302"],
+        "exclusions": {
+        "prefixes": ["CGS"],
+        "codes": ["EEL4834", "CIS4930"],
+        "exceptions": ["CGS3065"]
+        },
+        "constraints": {
+        "max_3000_level_cap": 2,
+        "max_internship_credits": 3
+        }
+    },
+    "special_logic": {
+        "advanced_programming_sub": {
+        "if_completed": "COP3504C",
+        "replaces": ["COP3502C", "COP3503C"],
+        "penalty_note": "Requires 4 additional elective credits to reach 120."
+        },
+        "ethics_double_dip": {
+        "codes": ["CGS3065", "PHI3681"],
+        "benefit": "Satisfies Ethics AND 3 units of Tech Electives."
+        }
+    }
+    }
+]
