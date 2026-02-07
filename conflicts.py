@@ -55,3 +55,33 @@ def has_global_conflict(sections_list):
                 daily_slots[day].append((start, end))
 
     return False
+def check_dependencies(current_schedule, major_metadata, student_completed):
+    """
+    Analyzes the schedule based on the tri-state 'is_standalone_ok' field.
+    """
+    hard_conflicts = []
+    soft_warnings = []
+
+    # Get all codes currently in the 'cart'
+    current_codes = [s['course_code'] for s in current_schedule]
+
+    for section in current_schedule:
+        code = section['course_code']
+        metadata = major_metadata.get(code, {})
+
+        policy = metadata.get('is_standalone_ok', True)
+        links = metadata.get('required_links', [])
+
+        for link in links:
+            # Check if student already has credit OR has it in their current cart
+            if link not in student_completed and link not in current_codes:
+
+                if policy == False:
+                    # HARD CONFLICT: Block the schedule
+                    hard_conflicts.append(f"❌ {code} requires {link} to be taken concurrently.")
+
+                elif policy == "partially":
+                    # SOFT WARNING: Just a tip for the student
+                    soft_warnings.append(f"💡 Tip: It's highly recommended to pair {code} with {link}.")
+
+    return hard_conflicts, soft_warnings
