@@ -40,5 +40,264 @@
         "benefit": "Satisfies Ethics AND 3 units of Tech Electives."
         }
     }
+    },
+    {
+    "major_code": "DAS",
+    "college": "Engineering",
+    "total_credits": 120,
+    "gpa_gate": {
+        "critical_tracking_min": 2.5,
+        "uf_cumulative_min": 2.0
+    },
+    "required_courses": {
+        "mathematics": ["MAC2311", "MAC2312", "MAC2313", "MAP2302", "MAS3114"],
+        "physics": ["PHY2048", "PHY2048L", "PHY2049", "PHY2049L"],
+        "chemistry": ["CHM2045"],
+        "art": ["ARH2051", "ART2305C", "ART2701C"],
+        "cise_core": [
+        "COP3502", 
+        "COP3503", 
+        "COT3100", 
+        "COP3530", 
+        "CEN3031", 
+        "CAP4730", 
+        "CEN4721C", 
+        "COP4600", 
+        "COT4501"
+        ],
+        "das_core": [
+        "CAP3032",
+        "CAP3220",
+        "CAP3034",
+        "CAP3027",
+        "CAP3020",
+        "CIS4914"
+        ]
+    },
+    "interdisciplinary_electives": {
+        "total_required": 15,
+        "upper_division_min": 6,
+        "approval_required": true,
+        "allowed_focus_areas": ["Film", "Modeling", "Media Production", "Architecture", "Music"],
+        "repeatable_course_cap": 3
+    },
+    "technical_electives": {
+        "total_required": 6,
+        "primary_dept": "CISE",
+        "explicit_allowed_codes": ["CDA3101", "CDA4102", "CNT4007C", "CIS4301", "CIS4940", "CIS4905"],
+        "constraints": {
+            "max_internship_credits": 1
+        }
+    },
+    "special_logic": {
+        "advanced_programming_sub": {
+        "if_completed": "COP3504C",
+        "replaces": ["COP3502", "COP3503"],
+        "credit_gap_warning": "Must replace 3–4 missing credits with electives."
+        }
+    }
+    },
+    {
+    "major_code": "CPE",
+    "college": "Engineering",
+    "total_credits": 126,
+    "gpa_gate": {
+        "critical_tracking_min": 2.5,
+        "uf_cumulative_min": 2.0,
+        "major_gpa_min": 2.0
+    },
+    "required_courses": {
+        "mathematics": ["MAC2311", "MAC2312", "MAC2313", "MAP2302", "MAS3114"],
+        "physics": ["PHY2048", "PHY2049"],
+        "general_science": ["Physical and Biological Science Elective"],
+        "cpe_core": [
+        "EGN2020C",
+        "COP3502C",
+        "COP3503C",
+        "COT3100",
+        "CDA3101",
+        "COP3530",
+        "CEN3031",
+        "COP4600",
+        "EEL3111C",
+        "EEL3135",
+        "EEL3701C",
+        "EEL4744C",
+        "EEL4712C",
+        "EGS4034",
+        "STA3032"
+        ],
+        "design_sequence_options": [
+        ["CEN3907C", "CEN3908C"],
+        ["EGN4951", "EGN4952"]
+        ]
+    },
+    "technical_electives": {
+        "total_required": 18,
+        "cise_ece_dept_min": 12,
+        "primary_dept": "CISE / ECE",
+        "breadth_depts": ["Mathematics", "Statistics", "Physics"],
+        "exclusions": {
+        "prefixes": [],
+        "codes": ["EEL3000", "EEL3003", "EEL3834", "EEL3872", "EEL4837", "MAD4203", "MAD3107"],
+        "logic": "Only one of COT4501/MAD4401; Only one of COT4420/MAD4505"
+        },
+        "constraints": {
+        "max_research_credits": 6,
+        "max_practical_work_credits": 3,
+        "combined_research_practical_cap": 8,
+        "programming_language_limit": 1
+        }
+    },
+    "interdisciplinary_enrichment": {
+        "total_required": 7,
+        "description": "Enrichment electives from approved list to broaden engineering perspective."
+    },
+    "special_logic": {
+        "advanced_programming_sub": {
+        "if_completed": "COP3504C",
+        "replaces": ["COP3502C", "COP3503C"],
+        "penalty_note": "Students must complete an additional 4 credits to meet graduation requirements."
+        },
+        "critical_tracking_rule": {
+        "attempts_allowed": 2,
+        "withdrawal_policy": "W counts as an attempt",
+        "min_grade": "C"
+        }
+    }
+    },
+    {
+    "major_code": "ME",
+    "college": "Engineering",
+    "total_credits": 128,
+    "gpa_gate": {
+        "critical_tracking_min": 2.8,
+        "uf_cumulative_min": 2.0,
+        "core_course_min_grade": "C"
+    },
+    "required_courses": {
+        "critical_tracking": [
+        "CHM2045",
+        "MAC2311",
+        "MAC2312",
+        "PHY2048",
+        "MAC2313",
+        "PHY2049",
+        "MAP2302",
+        "EML2023"
+        ],
+        "mae_core_five": [
+        "EGM2511",
+        "EGM3344",
+        "EGM3520",
+        "EML3100",
+        "EGM3401"
+        ],
+        "departmental_technical": [
+        "EML2920",
+        "COP2273",
+        "COP2271",
+        "EML2322L",
+        "EMA3010",
+        "EEL3003",
+        "EGN3353C",
+        "EML3301C",
+        "EML3005",
+        "EML4140",
+        "EML4220",
+        "EML4312",
+        "EML4147C",
+        "EML4507",
+        "EML4321",
+        "EML4314C"
+        ],
+        "capstone_options": ["EML4501", "EGN4951", "EAS4700", "EAS4710"],
+        "realization_options": ["EML4502", "EML4535C", "EML4914", "EML4842", "EGN4952"]
+    },
+    "technical_electives": {
+        "total_required": 12,
+        "breakdown": {
+        "technical_elective_credits": 9,
+        "specialization_elective_credits": 3
+        },
+        "specialization_logic": "Must be 4000-level or higher with EML, EGM, or EAS prefix.",
+        "constraints": {
+        "independent_study_limit": "See MAE approved list",
+        "note": "Courses must be satisfied independently; no double-counting."
+        }
+    },
+    "special_logic": {
+        "critical_tracking_strictness": {
+        "gpa_threshold": 2.8,
+        "max_attempts": 2,
+        "deadline": "Semester 5",
+        "consequence": "Mandatory change of major if threshold not met."
+        },
+        "writing_requirement": {
+        "total_words": 24000,
+        "integrated_courses": ["ENC1101", "ENC2256", "EML3301C"]
+        },
+        "programming_requirement": {
+        "languages": ["Python (COP2273)", "Matlab (COP2271)"],
+        "note": "Both are required; Matlab has no exceptions."
+        }
+    }
+    },
+    {
+    "major_code": "POL",
+    "college": "Liberal Arts and Sciences",
+    "total_credits": 120,
+    "gpa_gate": {
+        "critical_tracking_min": 2.0,
+        "uf_cumulative_min": 2.0
+    },
+    "required_courses": {
+        "critical_tracking_core": [
+        "CPO2001",
+        "INR2001",
+        "POS2041",
+        "POT2002",
+        "STA2023"
+        ],
+        "upper_division_major": {
+        "total_required": 18,
+        "level": "3000/4000",
+        "honors_track_options": ["POS4934", "POS4734", "POS4970"]
+        },
+        "general_education": {
+        "composition": 6,
+        "mathematics": 6,
+        "humanities": 9,
+        "social_behavioral": 9,
+        "biological_physical": 9,
+        "lab_requirement": 1
+        }
+    },
+    "foreign_language_requirement": {
+        "status": "Required",
+        "notes": "Proficiency required through the beginning-level sequence (typically 2-3 semesters/10 credits)."
+    },
+    "technical_electives": {
+        "total_required": 15,
+        "constraints": {
+        "level_restriction": "3000 level or above",
+        "department_restriction": "Must be taken outside of the Political Science major"
+        }
+    },
+    "special_logic": {
+        "clas_distribution_flexibility": {
+        "max_total_transfer": 6,
+        "caps": {
+            "humanities": 3,
+            "social_behavioral": 3,
+            "biological_physical": 6
+        }
+        },
+        "double_dip_rules": {
+        "international_requirement": "Must be earned concurrently with another Gen Ed (GE-C, H, or S).",
+        "pure_math_rule": "One of the two Gen Ed math courses must be a pure mathematics course."
+        },
+        "civic_literacy": "Must be completed as part of the degree requirements."
+    }
     }
 ]
