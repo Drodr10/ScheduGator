@@ -1,14 +1,14 @@
-# Schedugator
+# ScheduGator
 
-Schedugator is an AI-driven academic advisor and schedule optimizer built specifically for UF students. It automates the process of finding the perfect semester by cross-referencing degree requirements with real-time course availability, ensuring every generated schedule is conflict-free and aligned with graduation goals.
+ScheduGator is an AI-driven academic advisor and schedule optimizer built specifically for UF students. It automates the process of finding the perfect semester by cross-referencing degree requirements with real-time course availability, ensuring every generated schedule is conflict-free and aligned with graduation goals.
 
 ## What it Does
 
-Schedugator takes a student's current progress and preferences (like "no morning classes") and produces a complete schedule. It handles the heavy lifting of checking course codes, prerequisites, and time overlaps, so students don't have to spend hours on ONE.UF.
+ScheduGator takes a student's current progress and preferences (like "no morning classes") and produces a complete schedule. It handles the heavy lifting of checking course codes, prerequisites, and time overlaps, so students don't have to spend hours on ONE.UF.
 
 ## The Two-Bucket Knowledge System
 
-To provide university-wide coverage while maintaining perfect accuracy for high-stakes majors, Schedugator uses a tiered data approach:
+To provide university-wide coverage while maintaining perfect accuracy for high-stakes majors, ScheduGator uses a tiered data approach:
 
 ### Bucket 1: The Gold Standard (Manual)
 
@@ -33,9 +33,9 @@ The project is built on a "Logic First" principle. While the AI handles the conv
 
 Both "Gold" and "Scraped" data follow a unified JSON structure to ensure the system is 100% compatible across all majors.
 
-| Field | Description |
-|-------|-------------|
-| `major_code` | The 3-letter UF degree code (e.g., CPS, CPE). |
-| `semester_plan` | An array of courses required for each term. |
-| `critical_tracking` | A list of priority courses that must be completed on time. |
-| `substitutes` | A mapping of courses that can be swapped (e.g., MAS 3114 for MAS 4105). |
+| Field               | Description                                                             |
+| ------------------- | ----------------------------------------------------------------------- |
+| `major_code`        | The 3-letter UF degree code (e.g., CPS, CPE).                           |
+| `semester_plan`     | An array of courses required for each term.                             |
+| `critical_tracking` | A list of priority courses that must be completed on time.              |
+| `substitutes`       | A mapping of courses that can be swapped (e.g., MAS 3114 for MAS 4105). |
