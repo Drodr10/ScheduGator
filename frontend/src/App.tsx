@@ -362,7 +362,7 @@ export function App() {
   }, [store]);
 
   return (
-    <div className="flex flex-col h-screen bg-gator-gray-50 dark:bg-gray-900">
+    <div className="flex flex-col h-screen bg-gator-gray-50 dark:bg-gray-900 overflow-x-hidden">
       {/* Header */}
       <Header
         onExportCalendar={() => {
@@ -414,8 +414,8 @@ export function App() {
 
       {/* API Status Indicator */}
       {!apiHealthy && (
-        <div className="bg-red-500 text-white px-4 py-2 text-center text-sm">
-          ⚠️ Backend API Offline - Start server with: <code className="bg-red-600 px-2 py-1 rounded">python backend/api.py</code>
+        <div className="bg-red-500 text-white px-4 py-2 text-center text-sm break-words">
+          ⚠️ Backend API Offline - Start server with: <code className="bg-red-600 px-2 py-1 rounded break-all">python backend/api.py</code>
         </div>
       )}
 
@@ -439,7 +439,7 @@ export function App() {
             {/* Calendar */}
             <div className="xl:col-span-2 flex flex-col lg:overflow-hidden">
               <h2 className="text-2xl font-bold text-gator-gray-800 dark:text-gray-100 mb-4">Weekly Schedule</h2>
-              <div className="lg:flex-1 lg:overflow-auto">
+              <div className="overflow-x-auto lg:flex-1 lg:overflow-auto">
                 <Calendar
                   schedule={store.selectedSchedule}
                   selectedCourse={selectedCourse}

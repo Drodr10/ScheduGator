@@ -39,7 +39,7 @@ export const Calendar: React.FC<CalendarProps> = ({
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-gator border border-gator-gray-200 dark:border-gray-700 overflow-hidden flex flex-col h-full min-w-[640px] sm:min-w-[720px] lg:min-w-[800px]">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-gator border border-gator-gray-200 dark:border-gray-700 overflow-hidden flex flex-col min-w-[640px] sm:min-w-[720px] lg:min-w-[800px]">
       {/* Header */}
       <div className="grid grid-cols-[72px_repeat(5,minmax(120px,1fr))] sm:grid-cols-[90px_repeat(5,minmax(140px,1fr))] lg:grid-cols-[100px_repeat(5,1fr)] bg-gator-dark dark:bg-gray-900 text-white border-b border-gator-gray-200 dark:border-gray-700">
         <div className="p-3 sm:p-4 font-semibold border-r border-white/10">Time</div>
@@ -51,7 +51,7 @@ export const Calendar: React.FC<CalendarProps> = ({
       </div>
 
       {/* Main Grid Area */}
-      <div className="relative overflow-y-auto flex-1">
+      <div className="relative">
         <div 
           className="grid grid-cols-[72px_repeat(5,minmax(120px,1fr))] sm:grid-cols-[90px_repeat(5,minmax(140px,1fr))] lg:grid-cols-[100px_repeat(5,1fr)]"
           style={{ 
