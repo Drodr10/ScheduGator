@@ -99,6 +99,63 @@ select:focus-visible {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
+/* GATOR BRANDING ANIMATIONS */
+
+/* Gator Chomp Loading Animation */
+@keyframes gatorChomp {
+  0%, 100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(0.6);
+  }
+}
+
+.gator-loading {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.gator-loader {
+  display: inline-block;
+  width: 1.25rem;
+  height: 1.25rem;
+  animation: gatorChomp 0.8s infinite;
+  font-size: 1.25rem;
+  transform-origin: center;
+}
+
+/* Course Color-Coding Utilities */
+.course-math {
+  @apply bg-orange-500 border-orange-600;
+}
+
+.course-programming {
+  @apply bg-blue-500 border-blue-600;
+}
+
+.course-critical {
+  @apply bg-yellow-500 border-yellow-600;
+}
+
+.course-default {
+  @apply bg-gator-light border-gator-dark;
+}
+
+/* Gator Silhouette Background - subtle watermark */
+.calendar-with-gator::before {
+  content: "🐊";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 20rem;
+  opacity: 0.03;
+  pointer-events: none;
+  z-index: 0;
+}
+
 /* Responsive typography */
 @media (max-width: 768px) {
   h1 {

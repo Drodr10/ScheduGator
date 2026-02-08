@@ -2,6 +2,63 @@ import { Course, ConflictInfo, Schedule } from '../types/index';
 
 const DAYS_ORDER = ['M', 'T', 'W', 'Th', 'F'];
 
+// Convert time string like "1:55 PM" to decimal hours (1.916... for 1:55)
+function timeStringToDecimal(timeStr: string): number {
+  if (!timeStr) return NaN;
+  const match = timeStr.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
+  if (!match) return NaN;
+  
+  let hours = parseInt(match[1], 10);
+  const minutes = parseInt(match[2], 10);
+  const period = match[3]?.toUpperCase();
+  
+  if (period === 'PM' && hours !== 12) hours += 12;
+  if (period === 'AM' && hours === 12) hours = 0;
+  
+  return hours + minutes / 60;
+}
+
+// Get time range in decimal hours for a course
+function getTimeRange(course: Course): { start: number; end: number } | null {
+  // If course has detailed meetTimes, use the first one
+  if (course.meetTimes && course.meetTimes.length > 0) {
+    const meetTime = course.meetTimes[0];
+    const start = timeStringToDecimal(meetTime.meetTimeBegin || '');
+    const end = timeStringToDecimal(meetTime.meetTimeEnd || '');
+    
+    if (!isNaN(start) && !isNaN(end)) {
+      return { start, end };
+    }
+  }
+  
+  // Fall back to meetPeriod if available
+  if (course.meetPeriod) {
+    return {
+      start: typeof course.meetPeriod.start === 'number' ? course.meetPeriod.start : NaN,
+      end: typeof course.meetPeriod.end === 'number' ? course.meetPeriod.end : NaN,
+    };
+  }
+  
+  return null;
+}
+
+// Get all meeting days for a course
+function getMeetingDays(course: Course): string[] {
+  // If course has detailed meetTimes, aggregate all days
+  if (course.meetTimes && course.meetTimes.length > 0) {
+    const allDays = new Set<string>();
+    for (const meetTime of course.meetTimes) {
+      if (meetTime.meetDays) {
+        meetTime.meetDays.forEach(day => allDays.add(day));
+      }
+    }
+    if (allDays.size > 0) return Array.from(allDays);
+  }
+  
+  // Fall back to meetDays
+  return course.meetDays || [];
+}
+
 export function detectConflicts(courses: Course[]): ConflictInfo[] {
   const conflicts: ConflictInfo[] = [];
 
@@ -10,38 +67,110 @@ export function detectConflicts(courses: Course[]): ConflictInfo[] {
       const courseA = courses[i];
       const courseB = courses[j];
 
-      // Skip if either course doesn't have meetDays or meetPeriod
-      if (!courseA.meetDays || !courseB.meetDays || !courseA.meetPeriod || !courseB.meetPeriod) {
-        continue;
-      }
+      // Check if we need to use meetTimes (detailed) or fall back to legacy format
+      const hasDetailedTimes = 
+        (courseA.meetTimes && courseA.meetTimes.length > 0) ||
+        (courseB.meetTimes && courseB.meetTimes.length > 0);
 
-      // Find common meeting days
-      const commonDays = courseA.meetDays.filter(day =>
-        courseB.meetDays!.includes(day)
-      );
+      if (hasDetailedTimes) {
+        // Use detailed meetTimes for comparison
+        const meetTimesA = courseA.meetTimes || [];
+        const meetTimesB = courseB.meetTimes || [];
 
-      if (commonDays.length === 0) {
-        continue; // No common days, no conflict
-      }
+        if (meetTimesA.length === 0 || meetTimesB.length === 0) {
+          continue; // Can't compare
+        }
 
-      // Check for time overlap
-      const hasTimeOverlap =
-        courseA.meetPeriod.start < courseB.meetPeriod.end &&
-        courseA.meetPeriod.end > courseB.meetPeriod.start;
+        // Check all combinations of meetTimes
+        let foundConflict = false;
+        for (const meetA of meetTimesA) {
+          if (foundConflict) break;
+          for (const meetB of meetTimesB) {
+            const daysA = meetA.meetDays || [];
+            const daysB = meetB.meetDays || [];
 
-      if (hasTimeOverlap) {
-        const overlapStart = Math.max(courseA.meetPeriod.start, courseB.meetPeriod.start);
-        const overlapEnd = Math.min(courseA.meetPeriod.end, courseB.meetPeriod.end);
+            if (daysA.length === 0 || daysB.length === 0) {
+              continue;
+            }
 
-        conflicts.push({
-          courseA,
-          courseB,
-          conflictingDays: commonDays,
-          conflictingTimes: {
-            start: overlapStart,
-            end: overlapEnd,
-          },
-        });
+            // Find common meeting days
+            const commonDays = daysA.filter(day => daysB.includes(day));
+            if (commonDays.length === 0) {
+              continue; // No common days for this meetTime pair
+            }
+
+            // Parse times
+            const startA = timeStringToDecimal(meetA.meetTimeBegin || '');
+            const endA = timeStringToDecimal(meetA.meetTimeEnd || '');
+            const startB = timeStringToDecimal(meetB.meetTimeBegin || '');
+            const endB = timeStringToDecimal(meetB.meetTimeEnd || '');
+
+            if (isNaN(startA) || isNaN(endA) || isNaN(startB) || isNaN(endB)) {
+              continue; // Can't parse times
+            }
+
+            // Check for time overlap
+            const hasTimeOverlap = startA < endB && endA > startB;
+
+            if (hasTimeOverlap) {
+              const overlapStart = Math.max(startA, startB);
+              const overlapEnd = Math.min(endA, endB);
+
+              conflicts.push({
+                courseA,
+                courseB,
+                conflictingDays: commonDays,
+                conflictingTimes: {
+                  start: overlapStart,
+                  end: overlapEnd,
+                },
+              });
+              
+              // Found a conflict for this pair, break both loops
+              foundConflict = true;
+              break;
+            }
+          }
+        }
+      } else {
+        // Fall back to legacy meetPeriod/meetDays format
+        const daysA = getMeetingDays(courseA);
+        const daysB = getMeetingDays(courseB);
+        
+        if (daysA.length === 0 || daysB.length === 0) {
+          continue;
+        }
+
+        const commonDays = daysA.filter(day => daysB.includes(day));
+        if (commonDays.length === 0) {
+          continue;
+        }
+
+        const timeRangeA = getTimeRange(courseA);
+        const timeRangeB = getTimeRange(courseB);
+        
+        if (!timeRangeA || !timeRangeB || isNaN(timeRangeA.start) || isNaN(timeRangeB.start)) {
+          continue;
+        }
+
+        const hasTimeOverlap =
+          timeRangeA.start < timeRangeB.end &&
+          timeRangeA.end > timeRangeB.start;
+
+        if (hasTimeOverlap) {
+          const overlapStart = Math.max(timeRangeA.start, timeRangeB.start);
+          const overlapEnd = Math.min(timeRangeA.end, timeRangeB.end);
+
+          conflicts.push({
+            courseA,
+            courseB,
+            conflictingDays: commonDays,
+            conflictingTimes: {
+              start: overlapStart,
+              end: overlapEnd,
+            },
+          });
+        }
       }
     }
   }

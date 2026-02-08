@@ -11,7 +11,31 @@ interface CalendarProps {
 const DAYS_SHORT = ['M', 'T', 'W', 'Th', 'F'];
 const DAYS_FULL = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
 const START_HOUR = 7; 
-const END_HOUR = 20; 
+const END_HOUR = 20;
+
+// Helper function to determine course color based on code prefix
+const getCourseColorClass = (code: string, isCriticalTracking?: boolean): { bg: string; border: string } => {
+  // Critical tracking takes priority - yellow
+  if (isCriticalTracking) {
+    return { bg: 'bg-yellow-500', border: 'border-yellow-600' };
+  }
+
+  // Extract course prefix (letters only, before first digit)
+  const prefix = code.match(/^[A-Z]+/)?.[0] || '';
+
+  // Math courses - orange
+  if (/^(MAC|MAP|MAS)/.test(prefix)) {
+    return { bg: 'bg-orange-500', border: 'border-orange-600' };
+  }
+
+  // Programming/CS courses - blue
+  if (/^(COP|CEN|CIS|COT|CAP)/.test(prefix)) {
+    return { bg: 'bg-blue-500', border: 'border-blue-600' };
+  }
+
+  // Default - use course's existing color or gator light
+  return { bg: '', border: '' };
+};
 
 export const Calendar: React.FC<CalendarProps> = ({
   schedule,
@@ -39,7 +63,7 @@ export const Calendar: React.FC<CalendarProps> = ({
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-gator border border-gator-gray-200 dark:border-gray-700 overflow-hidden flex flex-col min-w-[640px] sm:min-w-[720px] lg:min-w-[800px]">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-gator border border-gator-gray-200 dark:border-gray-700 overflow-hidden flex flex-col min-w-[640px] sm:min-w-[720px] lg:min-w-[800px] calendar-with-gator">
       {/* Header */}
       <div className="grid grid-cols-[72px_repeat(5,minmax(120px,1fr))] sm:grid-cols-[90px_repeat(5,minmax(140px,1fr))] lg:grid-cols-[100px_repeat(5,1fr)] bg-gator-dark dark:bg-gray-900 text-white border-b border-gator-gray-200 dark:border-gray-700">
         <div className="p-3 sm:p-4 font-semibold border-r border-white/10">Time</div>
@@ -160,20 +184,26 @@ export const Calendar: React.FC<CalendarProps> = ({
                     c.conflictingDays.includes(dayLetter)
                 );
 
+                const colorClass = getCourseColorClass(
+                  course.code || course.courseCode || '',
+                  course.isCriticalTracking
+                );
+
                 return (
                   <div
                     key={`${course.courseCode}-${dayLetter}`}
                     onClick={() => onCourseSelect(course)}
                     className={`
                       z-10 m-1 p-2 rounded border-2 cursor-pointer transition-all overflow-hidden
-                      ${hasConflict ? 'border-red-500' : ''}
+                      ${colorClass.bg || 'bg-blue-500'}
+                      ${colorClass.border || 'border-blue-600'}
+                      ${hasConflict ? '!border-red-500' : ''}
                       ${selectedCourse?.courseCode === course.courseCode ? 'ring-2 ring-offset-2 ring-gator-dark' : ''}
                       hover:shadow-lg
                     `}
                     style={{
                       gridColumn: dayIndex + 2,
                       gridRow: `${startRow} / span ${rowSpan}`,
-                      backgroundColor: course.color || '#1976d2',
                     }}
                     title={`${course.courseCode} - ${dayLetter} ${formatTime(course.meetPeriod.start)}-${formatTime(course.meetPeriod.end)}`}
                   >

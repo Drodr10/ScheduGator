@@ -187,7 +187,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
             {isLoading && (
               <div className="flex justify-start">
                 <div className="bg-gator-gray-200 dark:bg-gray-700 text-gator-gray-900 dark:text-gray-100 px-4 py-3 rounded-lg rounded-bl-none flex items-center gap-2">
-                  <Loader2 size={16} className="animate-spin" />
+                  <div className="gator-loader">🐊</div>
                   <span className="text-sm">Generating schedule...</span>
                 </div>
               </div>
