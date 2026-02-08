@@ -19,17 +19,27 @@
   }
 }
 
-/* Custom scrollbar */
+/* Custom scrollbar - hidden but functional */
 ::-webkit-scrollbar {
-  @apply w-2 h-2;
+  @apply w-0 h-0;
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-gator-gray-100;
+  @apply bg-transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-gator-gray-300 rounded-full hover:bg-gator-gray-400;
+  @apply bg-transparent;
+}
+
+/* Hide scrollbar for Firefox */
+* {
+  scrollbar-width: none;
+}
+
+/* Hide scrollbar for IE and Edge */
+* {
+  -ms-overflow-style: none;
 }
 
 /* Course blocks animations */
