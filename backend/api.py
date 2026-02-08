@@ -326,10 +326,12 @@ if __name__ == '__main__':
     print(f"📚 Catalog loaded: {len(solver.catalog)} courses")
     print(f"🎓 Majors available: {len(major_requirements)}")
     print(f"🔑 API Key: {'✅ Found' if os.getenv('GEMINI_API_KEY') else '❌ Missing'}")
-    print("\n🚀 Server running on http://localhost:5000\n")
+    
+    port = int(os.getenv('PORT', 5000))
+    print(f"\n🚀 Server running on http://0.0.0.0:{port}\n")
     
     app.run(
         host='0.0.0.0',
-        port=5000,
-        debug=True
+        port=port,
+        debug=False
     )
