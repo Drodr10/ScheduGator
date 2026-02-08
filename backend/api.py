@@ -163,7 +163,10 @@ def search():
             min_level=data.get('min_level', 1000),
             max_level=data.get('max_level', 7000),
             is_ai=data.get('is_ai'),
-            sort_by=data.get('sort_by')
+            sort_by=data.get('sort_by'),
+            quest=data.get('quest'),
+            min_words=data.get('min_words'),
+            max_words=data.get('max_words')
         )
         
         return jsonify({

@@ -106,6 +106,10 @@ TOOL USAGE:
   - CORRECT: {"name": "search_catalog", "parameters": {"queries": ["COP", "CIS"], "min_level": 4000, "max_level": 4999}}
   - WRONG: {"name": "search_catalog", "parameters": {"query": "COP OR CIS", ...}}
   The "queries" parameter accepts a list and returns all courses matching ANY of the prefixes.
+    QUEST + WRITING FILTERS:
+    - Quest search: use quest="Quest 1" (or "Quest 2", "Quest 3")
+    - Writing word count: use min_words and/or max_words (accepts 2000/4000/6000 or 2/4/6)
+    - Example: {"name": "search_catalog", "parameters": {"quest": "Quest 2", "min_words": 4000}}
 - add_course: When user wants to add a specific section, extract the section/class number and call this tool.
   IMPORTANT: If user asks to add MULTIPLE sections (e.g., "add 13715 and 13766"), make MULTIPLE tool calls in sequence.
   One call per section - just make multiple calls if user requests multiple sections.
@@ -135,7 +139,10 @@ Available Functions:
         "min_level": {"type": "integer", "description": "Minimum course level (e.g., 3000)"},
         "max_level": {"type": "integer", "description": "Maximum course level (e.g., 4000)"},
         "is_ai": {"type": "boolean", "description": "Filter for AI courses"},
-        "sort_by": {"type": "string", "enum": ["asc", "desc"], "description": "Sort sections by time: 'asc' for earliest first, 'desc' for latest first"}
+                "sort_by": {"type": "string", "enum": ["asc", "desc"], "description": "Sort sections by time: 'asc' for earliest first, 'desc' for latest first"},
+                "quest": {"type": "string", "description": "Quest designation filter (Quest 1/2/3)"},
+                "min_words": {"type": "integer", "description": "Minimum writing word count (accepts 2000/4000/6000 or 2/4/6)"},
+                "max_words": {"type": "integer", "description": "Maximum writing word count (accepts 2000/4000/6000 or 2/4/6)"}
       }
     }
   },
@@ -368,7 +375,19 @@ class GemmaBrain:
 
         return "Requirements summary: " + "; ".join(parts)
 
-    def search_catalog_tool(self, query=None, queries=None, dept=None, min_level=None, max_level=None, is_ai=None, sort_by=None):
+    def search_catalog_tool(
+        self,
+        query=None,
+        queries=None,
+        dept=None,
+        min_level=None,
+        max_level=None,
+        is_ai=None,
+        sort_by=None,
+        quest=None,
+        min_words=None,
+        max_words=None,
+    ):
         """The actual Python tool execution"""
         
         # Auto-correct: if query is accidentally a list, treat it as queries
@@ -387,16 +406,36 @@ class GemmaBrain:
                     )
                 }
         if queries and isinstance(queries, list):
-            print(f"🔍 Executing tool: search_catalog(queries={queries}, {dept=}, {min_level=}, {max_level=}, {is_ai=}, {sort_by=})")
+            print(f"🔍 Executing tool: search_catalog(queries={queries}, {dept=}, {min_level=}, {max_level=}, {is_ai=}, {sort_by=}, {quest=}, {min_words=}, {max_words=})")
             batched = []
             for q in queries:
-                results = search_catalog(query=q, dept=dept, min_level=min_level, max_level=max_level, is_ai=is_ai, sort_by=sort_by)
+                results = search_catalog(
+                    query=q,
+                    dept=dept,
+                    min_level=min_level,
+                    max_level=max_level,
+                    is_ai=is_ai,
+                    sort_by=sort_by,
+                    quest=quest,
+                    min_words=min_words,
+                    max_words=max_words,
+                )
                 compact = [self._compact_course(course) for course in results]
                 batched.append({"query": q, "results": compact, "count": len(compact)})
             return {"results": batched, "status": "success"}
 
-        print(f"🔍 Executing tool: search_catalog({query=}, {dept=}, {min_level=}, {max_level=}, {is_ai=}, {sort_by=})")
-        results = search_catalog(query=query, dept=dept, min_level=min_level, max_level=max_level, is_ai=is_ai, sort_by=sort_by)
+        print(f"🔍 Executing tool: search_catalog({query=}, {dept=}, {min_level=}, {max_level=}, {is_ai=}, {sort_by=}, {quest=}, {min_words=}, {max_words=})")
+        results = search_catalog(
+            query=query,
+            dept=dept,
+            min_level=min_level,
+            max_level=max_level,
+            is_ai=is_ai,
+            sort_by=sort_by,
+            quest=quest,
+            min_words=min_words,
+            max_words=max_words,
+        )
         compact = [self._compact_course(course) for course in results]
         return {"results": compact, "count": len(compact), "status": "success"}
 
@@ -554,7 +593,15 @@ class GemmaBrain:
             # Handle batched search_catalog calls
             if len(search_calls) > 1:
                 queries = []
-                shared = {"dept": None, "min_level": None, "max_level": None, "is_ai": None}
+                shared = {
+                    "dept": None,
+                    "min_level": None,
+                    "max_level": None,
+                    "is_ai": None,
+                    "quest": None,
+                    "min_words": None,
+                    "max_words": None,
+                }
                 for call in search_calls:
                     params = call.get("parameters", {})
                     if params.get("query"):

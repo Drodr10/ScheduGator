@@ -8,6 +8,20 @@ def _normalize_text(value: str) -> str:
     return re.sub(r"[^a-z0-9]+", "", str(value).lower())
 
 
+def _normalize_word_count(value):
+    if value is None:
+        return None
+    try:
+        count = int(value)
+    except (TypeError, ValueError):
+        return None
+
+    # Catalog stores writingWords as 2/4/6 (thousands). Accept either 2000 or 2.
+    if count >= 1000:
+        return count // 1000
+    return count
+
+
 def _time_to_minutes(time_str):
     """Convert time string like '8:30 AM' or period number to minutes since midnight."""
     if isinstance(time_str, int):
@@ -88,7 +102,18 @@ def _dept_matches(course_dept: str, dept_query: str) -> bool:
     return False
 
 
-def search_catalog(query=None, queries=None, dept=None, min_level=1000, max_level=7000, is_ai=None, sort_by=None):
+def search_catalog(
+    query=None,
+    queries=None,
+    dept=None,
+    min_level=1000,
+    max_level=7000,
+    is_ai=None,
+    sort_by=None,
+    quest=None,
+    min_words=None,
+    max_words=None,
+):
     """
     Search tool for the AI Agent to query the universal_base_catalog.json.
     
@@ -100,6 +125,9 @@ def search_catalog(query=None, queries=None, dept=None, min_level=1000, max_leve
         max_level (int): Maximum course level (e.g., 4000).
         is_ai (bool): Filter for courses with the AI attribute.
         sort_by (str): Sort sections by time - 'asc' (earliest first), 'desc' (latest first), or None.
+        quest (str|list): Quest requirement filter (e.g., "Quest 1", "Quest 2").
+        min_words (int): Minimum writing word count (accepts 2000 or 2).
+        max_words (int): Maximum writing word count (accepts 2000 or 2).
         Results are capped at 10 to keep responses compact.
     """
     # Get the path relative to this file
@@ -108,6 +136,14 @@ def search_catalog(query=None, queries=None, dept=None, min_level=1000, max_leve
     
     with open(catalog_path, 'r') as f:
         catalog = json.load(f)
+
+    quest_filter = None
+    if quest:
+        quest_filter = quest if isinstance(quest, list) else [quest]
+        quest_filter = [_normalize_text(q) for q in quest_filter if q]
+
+    min_words_norm = _normalize_word_count(min_words)
+    max_words_norm = _normalize_word_count(max_words)
 
     results = []
     max_results = 10
@@ -152,6 +188,29 @@ def search_catalog(query=None, queries=None, dept=None, min_level=1000, max_leve
         if is_ai is not None:
             # Matches the 'isAI' key from your ingestion script
             if course.get('isAI', False) != is_ai:
+                continue
+
+        # 5. Quest Filter
+        if quest_filter:
+            course_quest = course.get('quest', [])
+            if not isinstance(course_quest, list):
+                course_quest = [course_quest]
+            course_quest_norm = {_normalize_text(q) for q in course_quest if q}
+            if not course_quest_norm:
+                continue
+            if not any(q in course_quest_norm for q in quest_filter):
+                continue
+
+        # 6. Writing Words Filter
+        if min_words_norm is not None or max_words_norm is not None:
+            writing_words = course.get('writingWords', 0) or 0
+            try:
+                writing_words = int(writing_words)
+            except (TypeError, ValueError):
+                writing_words = 0
+            if min_words_norm is not None and writing_words < min_words_norm:
+                continue
+            if max_words_norm is not None and writing_words > max_words_norm:
                 continue
 
         # Sort sections by time if requested
