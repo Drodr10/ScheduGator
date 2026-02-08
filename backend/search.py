@@ -113,6 +113,9 @@ def search_catalog(
     quest=None,
     min_words=None,
     max_words=None,
+    civicLiteracy=False,
+    international=False,
+    diversity=False,
 ):
     """
     Search tool for the AI Agent to query the universal_base_catalog.json.
@@ -128,14 +131,36 @@ def search_catalog(
         quest (str|list): Quest requirement filter (e.g., "Quest 1", "Quest 2").
         min_words (int): Minimum writing word count (accepts 2000 or 2).
         max_words (int): Maximum writing word count (accepts 2000 or 2).
+        civicLiteracy (bool): Filter for Civic Literacy requirement courses (POS2041, AMH2020, etc.).
+        international (bool): Filter for International requirement courses.
+        diversity (bool): Filter for Diversity requirement courses.
         Results are capped at 10 to keep responses compact.
     """
     # Get the path relative to this file
     current_dir = os.path.dirname(os.path.abspath(__file__))
     catalog_path = os.path.join(current_dir, '..', 'data', 'universal_base_catalog.json')
+    uf_requirements_path = os.path.join(current_dir, '..', 'data', 'uf_universal_requirements.json')
     
     with open(catalog_path, 'r') as f:
         catalog = json.load(f)
+    
+    # Load UF universal requirements reference
+    uf_requirements = {}
+    if os.path.exists(uf_requirements_path):
+        with open(uf_requirements_path, 'r') as f:
+            uf_requirements = json.load(f)
+    
+    # Extract well-known courses for each requirement
+    civic_literacy_courses = set(
+        course.upper() for course in 
+        uf_requirements.get('civicLiteracy', {}).get('courses', [])
+    )
+    international_courses = set(
+        course.upper() for course in 
+        uf_requirements.get('international', {}).get('examples', [])
+    )
+    # Note: diversity courses are harder to identify by code alone; we rely on description keywords
+    diversity_keywords = ['diversity', 'cultural', 'african', 'latino', 'lgbtq', 'gender', 'race', 'ethnicity']
 
     quest_filter = None
     if quest:
@@ -211,6 +236,33 @@ def search_catalog(
             if min_words_norm is not None and writing_words < min_words_norm:
                 continue
             if max_words_norm is not None and writing_words > max_words_norm:
+                continue
+
+        # 7. Civic Literacy Filter
+        if civicLiteracy:
+            if course['code'].upper() not in civic_literacy_courses:
+                continue
+
+        # 8. International Filter
+        if international:
+            course_code = course['code'].upper()
+            matches = (
+                course_code in international_courses or
+                any(code in course_code for code in ['INT', 'ISS', 'LAT', 'AFH', 'ASH', 'EUH']) or
+                'international' in course['description'].lower()
+            )
+            if not matches:
+                continue
+
+        # 9. Diversity Filter
+        if diversity:
+            desc_lower = course['description'].lower()
+            name_lower = course['name'].lower()
+            matches = any(
+                keyword in desc_lower or keyword in name_lower
+                for keyword in diversity_keywords
+            )
+            if not matches:
                 continue
 
         # Sort sections by time if requested

@@ -1,0 +1,59 @@
+{
+  "civicLiteracy": {
+    "description": "Civic Literacy Requirement - State-mandated requirement met via specific courses and exam",
+    "courses": [
+      "POS2041",
+      "AMH2020"
+    ],
+    "notes": "Students must complete one of these courses plus an exam"
+  },
+  "international": {
+    "description": "International Requirement - 3 credits of international coursework",
+    "minCredits": 3,
+    "examples": [
+      "INR2001",
+      "LAT2001",
+      "AFH2001",
+      "ASH2001",
+      "EUH2001"
+    ],
+    "notes": "Search for courses with 'international' in description or course codes starting with INT_, ISS_, LAT_, AFH_, ASH_, EUH_, etc."
+  },
+  "diversity": {
+    "description": "Diversity Requirement - 3 credits of diversity coursework (cultural, race, gender, sexuality perspectives)",
+    "minCredits": 3,
+    "examples": [
+      "AFA2000",
+      "WGS2000",
+      "LGBTQ-designated courses"
+    ],
+    "notes": "Cross-listed courses often satisfy both International and Diversity"
+  },
+  "writing": {
+    "description": "Writing Requirement - 24,000 words total across courses",
+    "totalWords": 24000,
+    "scales": [
+      "2 (2,000 words)",
+      "4 (4,000 words)",
+      "6 (6,000 words)"
+    ],
+    "notes": "Courses have writingWords field: 2, 4, or 6. Students need combinations totaling 24,000 words (e.g., 6+6+6+6 = 24k)"
+  },
+  "summerEnrollment": {
+    "description": "Summer Enrollment - Students with <60 credits at entry must complete 9+ credits in summer",
+    "minCredits": 9,
+    "notes": "Check course availability during summer term"
+  },
+  "questRequirements": {
+    "description": "UF Quest 1 & 2 - Two interdisciplinary courses exploring 'Big Questions'",
+    "quest1": {
+      "codes": ["QUEST 1"],
+      "description": "Humanistic inquiry (e.g., humanities, arts, philosophy)"
+    },
+    "quest2": {
+      "codes": ["QUEST 2"],
+      "description": "Social/Natural Sciences inquiry (e.g., social science, natural science, math)"
+    },
+    "notes": "Courses tagged with quest designation in catalog"
+  }
+}

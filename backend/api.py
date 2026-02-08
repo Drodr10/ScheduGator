@@ -150,7 +150,10 @@ def search():
         "min_level": 3000,
         "max_level": 4000,
         "is_ai": false,
-        "sort_by": "asc"  // Optional: "asc", "desc", or omit
+        "sort_by": "asc",  // Optional: "asc", "desc", or omit
+        "civicLiteracy": false,
+        "international": false,
+        "diversity": false
     }
     """
     try:
@@ -166,7 +169,10 @@ def search():
             sort_by=data.get('sort_by'),
             quest=data.get('quest'),
             min_words=data.get('min_words'),
-            max_words=data.get('max_words')
+            max_words=data.get('max_words'),
+            civicLiteracy=data.get('civicLiteracy', False),
+            international=data.get('international', False),
+            diversity=data.get('diversity', False)
         )
         
         return jsonify({
