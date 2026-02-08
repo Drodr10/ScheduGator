@@ -1,9 +1,11 @@
+/// <reference types="vite/client" />
+
 /**
  * API Service Layer for ScheduGator
  * Handles all HTTP requests to the Flask backend
  */
 
-const API_BASE_URL =  import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
 
 // ==================== Types ====================
 
