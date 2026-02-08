@@ -12,3 +12,6 @@ google-genai>=0.3.0
 # Flask web framework for API
 flask>=3.0.0
 flask-cors>=4.0.0
+
+# Production WSGI server
+gunicorn>=21.2.0
