@@ -1,0 +1,116 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@layer base {
+  html {
+    @apply bg-gator-gray-50 text-gator-gray-900;
+  }
+
+  body {
+    @apply bg-gator-gray-50 text-gator-gray-900 min-h-screen;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  @apply w-2 h-2;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gator-gray-100;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gator-gray-300 rounded-full hover:bg-gator-gray-400;
+}
+
+/* Course blocks animations */
+.course-block {
+  @apply transition-all duration-200;
+}
+
+.course-block:hover {
+  @apply shadow-lg scale-105 z-10;
+}
+
+.course-block.conflict {
+  @apply border-red-500 bg-red-50 shadow-md;
+}
+
+/* Chat animations */
+.message-enter {
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Grid layout utilities */
+.grid-auto-fit {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+/* Focus states for accessibility */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  @apply outline-none ring-2 ring-offset-2 ring-gator-accent;
+}
+
+/* Loading animation */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse-gator {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Responsive typography */
+@media (max-width: 768px) {
+  h1 {
+    @apply text-2xl;
+  }
+  
+  h2 {
+    @apply text-xl;
+  }
+}
+
+/* Print styles */
+@media print {
+  @page {
+    margin: 0.5in;
+  }
+  
+  body {
+    @apply bg-white;
+  }
+  
+  .no-print {
+    @apply hidden;
+  }
+}
