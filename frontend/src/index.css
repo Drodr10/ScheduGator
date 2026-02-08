@@ -11,11 +11,11 @@
 
 @layer base {
   html {
-    @apply bg-gator-gray-50 text-gator-gray-900;
+    @apply bg-gator-gray-50 dark:bg-gray-900 text-gator-gray-900 dark:text-gray-100;
   }
 
   body {
-    @apply bg-gator-gray-50 text-gator-gray-900 min-h-screen;
+    @apply bg-gator-gray-50 dark:bg-gray-900 text-gator-gray-900 dark:text-gray-100 min-h-screen;
   }
 }
 
