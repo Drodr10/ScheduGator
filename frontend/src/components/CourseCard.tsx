@@ -1,13 +1,14 @@
 import React from 'react';
 import { Course, ConflictInfo } from '../types/index';
 import { getCourseColor, getConflictsForCourse, formatTime } from '../utils/conflict';
-import { AlertCircle, Award } from 'lucide-react';
+import { AlertCircle, Award, X } from 'lucide-react';
 
 interface CourseCardProps {
   course: Course;
   isSelected?: boolean;
   conflicts?: ConflictInfo[];
   onClick?: () => void;
+  onDelete?: (course: Course) => void;
   variant?: 'compact' | 'detailed';
 }
 
@@ -16,9 +17,11 @@ export const CourseCard: React.FC<CourseCardProps> = ({
   isSelected = false,
   conflicts = [],
   onClick,
+  onDelete,
   variant = 'detailed',
 }) => {
-  const color = getCourseColor(course.courseCode);
+  const courseCodeForColor = course.courseCode || course.code || 'UNKNOWN';
+  const color = getCourseColor(courseCodeForColor);
   const courseConflicts = getConflictsForCourse(course, conflicts);
   const hasConflict = courseConflicts.length > 0;
 
@@ -59,25 +62,37 @@ export const CourseCard: React.FC<CourseCardProps> = ({
       `}
     >
       <div className="flex items-start justify-between mb-3">
-        <div>
+        <div className="flex-1">
           <h3 className={`font-bold ${color.text} text-lg`}>
             {course.courseCode}
           </h3>
           <p className="text-sm text-gray-700 dark:text-gray-300">{course.courseName}</p>
         </div>
-        <div className="flex gap-1">
+        <div className="flex gap-1 items-start">
           {course.isCriticalTracking && (
             <div
               title="Critical Tracking Course"
-              className="bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-300 p-1 rounded"
+              className="bg-yellow-400 dark:bg-yellow-500 text-yellow-900 dark:text-yellow-950 px-2 py-1 rounded text-xs font-bold"
             >
-              <AlertCircle size={16} />
+              CRITICAL
             </div>
           )}
           {course.isAISuggested && (
             <div title="AI Suggested" className="bg-purple-100 dark:bg-purple-900/50 text-purple-800 dark:text-purple-300 p-1 rounded">
               <Award size={16} />
             </div>
+          )}
+          {onDelete && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(course);
+              }}
+              className="p-1 hover:bg-red-100 dark:hover:bg-red-900/50 rounded transition-colors text-red-600 dark:text-red-400"
+              title="Remove course"
+            >
+              <X size={16} />
+            </button>
           )}
         </div>
       </div>
@@ -95,17 +110,28 @@ export const CourseCard: React.FC<CourseCardProps> = ({
 
         <div>
           <span className="font-semibold text-gray-700 dark:text-gray-300">Schedule:</span>
-          <p className="text-gray-900 dark:text-gray-100">
-            {course.meetDays.join(', ')} {formatTime(course.meetPeriod.start)} -{' '}
-            {formatTime(course.meetPeriod.end)}
-          </p>
+          <div className="text-gray-900 dark:text-gray-100 space-y-1">
+            {course.meetTimes && course.meetTimes.length > 0 ? (
+              course.meetTimes.map((meetTime, idx) => {
+                const days = meetTime.meetDays?.map(day => day === 'R' ? 'Th' : day).join(', ') || 'TBA';
+                const timeBegin = meetTime.meetTimeBegin || '';
+                const timeEnd = meetTime.meetTimeEnd || '';
+                return (
+                  <div key={idx}>
+                    {days} {timeBegin && timeEnd ? `${timeBegin} - ${timeEnd}` : ''}
+                  </div>
+                );
+              })
+            ) : (
+              <div>
+                {course.meetDays?.join(', ') || 'TBA'} {course.meetPeriod ? `${formatTime(course.meetPeriod.start)} - ${formatTime(course.meetPeriod.end)}` : ''}
+              </div>
+            )}
+          </div>
         </div>
 
-        <div className="flex justify-between text-xs text-gray-600 dark:text-gray-400">
+        <div className="text-xs text-gray-600 dark:text-gray-400">
           <span>Section: {course.section}</span>
-          <span>
-            {course.enrollmentActual}/{course.enrollmentCap} enrolled
-          </span>
         </div>
       </div>
 

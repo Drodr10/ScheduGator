@@ -3,7 +3,43 @@ export interface TimeSlot {
   end: number;
 }
 
+export interface MeetTime {
+  meetNo?: number;
+  meetDays: string[]; // ['M', 'W', 'F'] or ['T', 'Th']
+  meetTimeBegin?: string;
+  meetTimeEnd?: string;
+  meetPeriodBegin?: string | number;
+  meetPeriodEnd?: string | number;
+  meetBuilding?: string;
+  meetBldgCode?: string;
+  meetRoom?: string;
+}
+
 export interface Course {
+  id?: string;
+  code: string; // e.g., "COP3503C"
+  name: string;
+  classNum?: number; // unique section identifier e.g., 10537
+  section?: string; // section number
+  instructors?: string[];
+  instructor?: string; // single instructor (legacy format)
+  credits: number;
+  meetDays?: string[]; // ['M', 'W', 'F'] or ['T', 'Th']
+  meetPeriod?: TimeSlot; // legacy format
+  meetTimes?: MeetTime[]; // new format
+  enrollmentCap?: number;
+  enrollmentActual?: number;
+  isCriticalTracking?: boolean;
+  isAISuggested?: boolean;
+  dept?: string;
+  color?: string;
+  // Legacy fields for backward compatibility
+  courseCode?: string;
+  courseName?: string;
+}
+
+// Legacy Course interface (kept for compatibility)
+export interface CourseOld {
   courseCode: string;
   courseName: string;
   instructor: string;

@@ -8,6 +8,7 @@ interface SchedulePanelProps {
   schedule: Schedule | null;
   selectedCourse: Course | null;
   onCourseSelect: (course: Course) => void;
+  onCourseDelete?: (course: Course) => void;
   showConflictsOnly?: boolean;
   showCriticalTrackingOnly?: boolean;
   onToggleConflictFilter?: () => void;
@@ -18,6 +19,7 @@ export const SchedulePanel: React.FC<SchedulePanelProps> = ({
   schedule,
   selectedCourse,
   onCourseSelect,
+  onCourseDelete,
   showConflictsOnly = false,
   showCriticalTrackingOnly = false,
   onToggleConflictFilter,
@@ -142,6 +144,7 @@ export const SchedulePanel: React.FC<SchedulePanelProps> = ({
               isSelected={selectedCourse?.courseCode === course.courseCode}
               conflicts={conflicts}
               onClick={() => onCourseSelect(course)}
+              onDelete={onCourseDelete}
               variant="detailed"
             />
           ))

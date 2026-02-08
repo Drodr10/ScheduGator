@@ -7,6 +7,24 @@
         "critical_tracking_min": 2.5,
         "uf_cumulative_min": 2.0
     },
+    "required_courses" : {
+        "critical_tracking": ["MAC2311", "MAC2312", "MAC2313", "PHY2048", "PHY2049", "COP3502C"],
+        "mathematics": ["MAC2311", "MAC2312", "MAC2313", "MAS3114", "STA3032"],
+        "physics": ["PHY2048", "PHY2048L", "PHY2049", "PHY2049L"],
+        "communications(choose 1)": ["ENC2256", "ENC3246"],
+        "cise_core": [
+        "COP3502C", 
+        "COP3503C", 
+        "COT3100", 
+        "COP3530", 
+        "CEN3031", 
+        "CIS4301", 
+        "COP4020", 
+        "COP4600", 
+        "CNT4007",
+        "CIS4914"
+        ]
+    },
     "technical_electives": {
         "total_required": 18,
         "cise_dept_min": 14,
@@ -50,6 +68,7 @@
         "uf_cumulative_min": 2.0
     },
     "required_courses": {
+        "critical_tracking": ["MAC2311", "MAC2312", "MAC2313", "PHY2048", "PHY2049", "MAP2302", "ARH2051"],
         "mathematics": ["MAC2311", "MAC2312", "MAC2313", "MAP2302", "MAS3114"],
         "physics": ["PHY2048", "PHY2048L", "PHY2049", "PHY2049L"],
         "chemistry": ["CHM2045"],
@@ -107,6 +126,7 @@
         "major_gpa_min": 2.0
     },
     "required_courses": {
+        "critical_tracking": ["MAC2311", "MAC2312", "MAC2313", "MAP2302", "PHY2048", "PHY2049", "EEL4744C"],
         "mathematics": ["MAC2311", "MAC2312", "MAC2313", "MAP2302", "MAS3114"],
         "physics": ["PHY2048", "PHY2049"],
         "general_science": ["Physical and Biological Science Elective"],
@@ -252,7 +272,7 @@
         "uf_cumulative_min": 2.0
     },
     "required_courses": {
-        "critical_tracking_core": [
+        "critical_tracking": [
         "CPO2001",
         "INR2001",
         "POS2041",

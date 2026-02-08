@@ -92,7 +92,10 @@ def ingest_uf_data():
 catalog_data = ingest_uf_data()
 
 # Save to your Bucket 2 "Universal Base"
-with open('universal_base_catalog.json', 'w') as f:
+current_dir = os.path.dirname(os.path.abspath(__file__))
+catalog_path = os.path.join(current_dir, '..', 'data', 'universal_base_catalog.json')
+
+with open(catalog_path, 'w') as f:
     json.dump(catalog_data, f, indent=2)
 
-print(f"--- 🏁 Success: Saved {len(catalog_data)} courses to universal_base_catalog.json ---")
+print(f"--- 🏁 Success: Saved {len(catalog_data)} courses to {catalog_path} ---")

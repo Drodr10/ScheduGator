@@ -82,45 +82,108 @@ export const Calendar: React.FC<CalendarProps> = ({
           ))}
 
           {/* 3. RENDER COURSES (Overlayed on the grid) */}
-          {schedule.courses.map((course) => (
-            course.meetDays.map((dayLetter) => {
-              const dayIndex = DAYS_SHORT.indexOf(dayLetter);
-              if (dayIndex === -1) return null;
+          {schedule.courses.map((course) => {
+            // Use meetTimes if available, otherwise fall back to meetDays/meetPeriod
+            if (course.meetTimes && course.meetTimes.length > 0) {
+              // Render each meeting time separately
+              return course.meetTimes.map((meetTime, meetTimeIdx) => {
+                return meetTime.meetDays?.map((dayLetter) => {
+                  const dayIndex = DAYS_SHORT.indexOf(dayLetter === 'R' ? 'Th' : dayLetter);
+                  if (dayIndex === -1) return null;
 
-              const startRow = course.meetPeriod.start - START_HOUR + 1;
-              const rowSpan = course.meetPeriod.end - course.meetPeriod.start;
+                  // Parse times from meetTime
+                  const parseTime = (timeStr: string): number => {
+                    const match = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
+                    if (!match) return 8;
+                    let hour = parseInt(match[1]);
+                    const minutes = parseInt(match[2]);
+                    const period = match[3].toUpperCase();
+                    if (period === 'PM' && hour !== 12) hour += 12;
+                    else if (period === 'AM' && hour === 12) hour = 0;
+                    return hour + (minutes / 60);
+                  };
 
-              const hasConflict = conflicts.some(
-                (c) =>
-                  (c.courseA.courseCode === course.courseCode ||
-                    c.courseB.courseCode === course.courseCode) &&
-                  c.conflictingDays.includes(dayLetter)
-              );
+                  const startTime = parseTime(meetTime.meetTimeBegin || '8:00 AM');
+                  const endTime = parseTime(meetTime.meetTimeEnd || '9:00 AM');
 
-              return (
-                <div
-                  key={`${course.courseCode}-${dayLetter}`}
-                  onClick={() => onCourseSelect(course)}
-                  className={`
-                    z-10 m-1 p-2 rounded border-2 cursor-pointer transition-all overflow-hidden
-                    ${hasConflict ? 'border-red-500 bg-red-100/95 dark:bg-red-900/40' : 'border-blue-400 dark:border-blue-600 bg-blue-100/95 dark:bg-blue-900/40'}
-                    ${selectedCourse?.courseCode === course.courseCode ? 'ring-2 ring-gator-dark dark:ring-gator-light shadow-lg z-20 scale-[1.02]' : ''}
-                  `}
-                  style={{
-                    gridColumn: dayIndex + 2,
-                    gridRow: `${startRow} / span ${rowSpan}`,
-                  }}
-                >
-                  <div className="font-bold text-blue-900 dark:text-blue-200 text-xs truncate">
-                    {course.courseCode}
+                  const startRow = Math.floor(startTime - START_HOUR) + 1;
+                  const rowSpan = Math.ceil(endTime - startTime);
+
+                  const hasConflict = conflicts.some(
+                    (c) =>
+                      (c.courseA.courseCode === course.courseCode ||
+                        c.courseB.courseCode === course.courseCode) &&
+                      c.conflictingDays.includes(dayLetter)
+                  );
+
+                  return (
+                    <div
+                      key={`${course.courseCode}-${dayLetter}-${meetTimeIdx}`}
+                      onClick={() => onCourseSelect(course)}
+                      className={`
+                        z-10 m-1 p-2 rounded border-2 cursor-pointer transition-all overflow-hidden
+                        ${hasConflict ? 'border-red-500' : ''}
+                        ${selectedCourse?.courseCode === course.courseCode ? 'ring-2 ring-offset-2 ring-gator-dark' : ''}
+                        hover:shadow-lg
+                      `}
+                      style={{
+                        gridColumn: dayIndex + 2,
+                        gridRow: `${startRow} / span ${rowSpan}`,
+                        backgroundColor: course.color || '#1976d2',
+                      }}
+                      title={`${course.courseCode} - ${dayLetter} ${meetTime.meetTimeBegin}-${meetTime.meetTimeEnd}`}
+                    >
+                      <div className="text-xs font-bold text-white truncate">{course.courseCode}</div>
+                      <div className="text-xs text-white/90 truncate">{formatTime(startTime)}</div>
+                    </div>
+                  );
+                }) as any;
+              });
+            } else {
+              // Fallback to legacy meetDays/meetPeriod
+              return course.meetDays?.map((dayLetter) => {
+                const dayIndex = DAYS_SHORT.indexOf(dayLetter);
+                if (dayIndex === -1) return null;
+
+                // Check if meetPeriod is defined
+                if (!course.meetPeriod) return null;
+
+                // Convert fractional hours to grid rows
+                // Round start time down, end time up for better positioning
+                const startRow = Math.floor(course.meetPeriod.start - START_HOUR) + 1;
+                const rowSpan = Math.ceil(course.meetPeriod.end - course.meetPeriod.start);
+
+                const hasConflict = conflicts.some(
+                  (c) =>
+                    (c.courseA.courseCode === course.courseCode ||
+                      c.courseB.courseCode === course.courseCode) &&
+                    c.conflictingDays.includes(dayLetter)
+                );
+
+                return (
+                  <div
+                    key={`${course.courseCode}-${dayLetter}`}
+                    onClick={() => onCourseSelect(course)}
+                    className={`
+                      z-10 m-1 p-2 rounded border-2 cursor-pointer transition-all overflow-hidden
+                      ${hasConflict ? 'border-red-500' : ''}
+                      ${selectedCourse?.courseCode === course.courseCode ? 'ring-2 ring-offset-2 ring-gator-dark' : ''}
+                      hover:shadow-lg
+                    `}
+                    style={{
+                      gridColumn: dayIndex + 2,
+                      gridRow: `${startRow} / span ${rowSpan}`,
+                      backgroundColor: course.color || '#1976d2',
+                    }}
+                    title={`${course.courseCode} - ${dayLetter} ${formatTime(course.meetPeriod.start)}-${formatTime(course.meetPeriod.end)}`}
+                  >
+                    <div className="text-xs font-bold text-white truncate">{course.courseCode}</div>
+                    <div className="text-xs text-white/90 truncate">{formatTime(course.meetPeriod.start)}</div>
                   </div>
-                  <div className="text-[10px] text-blue-800 dark:text-blue-300 font-medium truncate">
-                    {course.instructor}
-                  </div>
-                </div>
-              );
-            })
-          ))}
+                );
+              });
+            }
+          })}
         </div>
       </div>
     </div>

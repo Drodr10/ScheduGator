@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChatMessage } from '../types/index';
-import { Send, Settings2, MessageSquare, Loader2 } from 'lucide-react';
+import { Send, MessageSquare, Loader2 } from 'lucide-react';
 
 interface ChatSidebarProps {
   majorsList: string[];
@@ -18,6 +18,59 @@ const DEMO_MAJORS = [
   'Data Science (DAS)',
   'Business (BUS)',
 ];
+
+// Format message content for better readability
+function formatMessage(content: string): JSX.Element {
+  const trimmed = content.trim();
+  // Check for empty tool_calls response (with flexible whitespace)
+  if (/^\{\s*"tool_calls"\s*:\s*\[\s*\]\s*\}$/.test(trimmed)) {
+    return (
+      <p>
+        I can help with that. Please tell me your major and any preferences
+        (morning/evening, days off, AP/dual enrollment credits).
+      </p>
+    );
+  }
+  // Split by double newlines for paragraphs
+  const paragraphs = content.split(/\n\n+/);
+  
+  return (
+    <>
+      {paragraphs.map((para, idx) => {
+        // Check if paragraph is a bullet list
+        const isList = para.includes('\n* ') || para.includes('\n- ') || /^[\*\-•]\s/.test(para);
+        
+        if (isList) {
+          // Format as bullet list
+          const items = para
+            .split(/\n/)
+            .filter(line => line.trim())
+            .map(line => line.replace(/^[\*\-•]\s*/, '').trim());
+          
+          return (
+            <ul key={idx} className="list-disc list-inside space-y-1 my-2">
+              {items.map((item, i) => (
+                <li key={i} className="ml-2">{item}</li>
+              ))}
+            </ul>
+          );
+        } else {
+          // Regular paragraph - preserve line breaks
+          return (
+            <p key={idx} className={idx > 0 ? 'mt-3' : ''}>
+              {para.split('\n').map((line, i) => (
+                <React.Fragment key={i}>
+                  {i > 0 && <br />}
+                  {line}
+                </React.Fragment>
+              ))}
+            </p>
+          );
+        }
+      })}
+    </>
+  );
+}
 
 export const ChatSidebar: React.FC<ChatSidebarProps> = ({
   majorsList,
@@ -55,10 +108,10 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
   const majorsToShow = majorsList.length > 0 ? majorsList : DEMO_MAJORS;
 
   return (
-    <div className="flex flex-col h-full bg-white dark:bg-gray-800 border-r border-gator-gray-200 dark:border-gray-700">
+    <div className="flex flex-col h-full min-h-0 bg-white dark:bg-gray-800 border-r border-gator-gray-200 dark:border-gray-700 overflow-hidden">
       {/* Header */}
       <div
-        className="bg-gradient-to-r from-gator-dark to-gator-light p-4 text-white"
+        className="bg-gradient-to-r from-gator-dark to-gator-light p-4 text-white shrink-0"
         style={{ backgroundImage: 'linear-gradient(90deg, #003DA5 0%, #0066FF 100%)' }}
       >
         <h2 className="text-xl font-bold flex items-center gap-2">
@@ -69,7 +122,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
       </div>
 
       {/* Major Selection */}
-      <div className="p-4 border-b border-gator-gray-200 dark:border-gray-700 bg-gator-gray-50 dark:bg-gray-900">
+      <div className="p-4 border-b border-gator-gray-200 dark:border-gray-700 bg-gator-gray-50 dark:bg-gray-900 shrink-0">
         <label className="block text-sm font-semibold text-gator-gray-700 dark:text-gray-300 mb-2">
           Select Your Major
         </label>
@@ -85,19 +138,12 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
             </option>
           ))}
         </select>
-        <button
-          className="mt-2 w-full flex items-center justify-center gap-2 bg-gator-accent text-white font-semibold py-2 px-3 rounded-lg hover:bg-orange-600 transition-colors"
-          title="Export schedule to Google or Outlook calendar"
-        >
-          <Settings2 size={16} />
-          Export to Calendar
-        </button>
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gator-gray-50 dark:bg-gray-900">
+      <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-4 bg-gator-gray-50 dark:bg-gray-900 flex flex-col">
         {messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full text-center py-8">
+          <div className="flex flex-col items-center justify-center text-center py-8">
             <MessageSquare size={48} className="text-gator-gray-300 dark:text-gray-600 mb-4" />
             <p className="text-gator-gray-600 dark:text-gray-400 font-semibold">No messages yet</p>
             <p className="text-gator-gray-500 dark:text-gray-500 text-sm mt-2">
@@ -114,24 +160,30 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
           </div>
         ) : (
           <>
-            {messages.map((msg) => (
-              <div key={msg.id} className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div
-                  className={`max-w-xs px-4 py-3 rounded-lg ${
-                    msg.type === 'user'
-                      ? 'bg-gator-dark text-white rounded-br-none'
-                      : msg.type === 'system'
-                      ? 'bg-yellow-100 dark:bg-yellow-900 text-yellow-900 dark:text-yellow-100 border-l-4 border-yellow-500 rounded-bl-none'
-                      : 'bg-gator-gray-200 dark:bg-gray-700 text-gator-gray-900 dark:text-gray-100 rounded-bl-none'
-                  }`}
-                >
-                  <p className="text-sm">{msg.content}</p>
-                  <p className={`text-xs mt-1 ${msg.type === 'user' ? 'text-gator-gray-300' : 'text-gator-gray-600'}`}>
-                    {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </p>
+            {messages.map((msg) => {
+              return (
+                <div key={msg.id} className={`flex ${msg.type === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  <div
+                    className={`max-w-[85%] px-4 py-3 rounded-lg ${
+                      msg.type === 'user'
+                        ? 'bg-gator-dark text-white rounded-br-none'
+                        : msg.type === 'system'
+                        ? 'bg-yellow-100 dark:bg-yellow-900 text-yellow-900 dark:text-yellow-100 border-l-4 border-yellow-500 rounded-bl-none'
+                        : 'bg-gator-gray-200 dark:bg-gray-700 text-gator-gray-900 dark:text-gray-100 rounded-bl-none'
+                    }`}
+                  >
+                    <div className="text-sm whitespace-pre-wrap break-words">
+                      {formatMessage(msg.content)}
+                    </div>
+                    <div className="flex items-center justify-between mt-2 gap-2">
+                      <p className={`text-xs ${msg.type === 'user' ? 'text-gator-gray-300' : 'text-gator-gray-600 dark:text-gray-400'}`}>
+                        {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </p>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
             {isLoading && (
               <div className="flex justify-start">
                 <div className="bg-gator-gray-200 dark:bg-gray-700 text-gator-gray-900 dark:text-gray-100 px-4 py-3 rounded-lg rounded-bl-none flex items-center gap-2">
@@ -146,7 +198,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
       </div>
 
       {/* Input Area */}
-      <div className="border-t border-gator-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4">
+      <div className="border-t border-gator-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 p-4 shrink-0">
         <div className="flex gap-2">
           <input
             type="text"
@@ -154,7 +206,7 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
             onChange={(e) => setInputValue(e.target.value)}
             onKeyPress={handleKeyPress}
             placeholder="Ask the AI Advisor..."
-            disabled={!selectedMajor || isLoading}
+            disabled={!selectedMajor}
             className="flex-1 px-4 py-2 border-2 border-gator-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:border-gator-dark dark:focus:border-gator-light focus:ring-1 focus:ring-gator-dark dark:focus:ring-gator-light bg-white dark:bg-gray-700 text-gator-gray-900 dark:text-gray-100 disabled:bg-gator-gray-100 dark:disabled:bg-gray-900 disabled:cursor-not-allowed"
           />
           <button

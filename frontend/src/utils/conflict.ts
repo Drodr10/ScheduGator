@@ -10,9 +10,14 @@ export function detectConflicts(courses: Course[]): ConflictInfo[] {
       const courseA = courses[i];
       const courseB = courses[j];
 
+      // Skip if either course doesn't have meetDays or meetPeriod
+      if (!courseA.meetDays || !courseB.meetDays || !courseA.meetPeriod || !courseB.meetPeriod) {
+        continue;
+      }
+
       // Find common meeting days
       const commonDays = courseA.meetDays.filter(day =>
-        courseB.meetDays.includes(day)
+        courseB.meetDays!.includes(day)
       );
 
       if (commonDays.length === 0) {
@@ -78,6 +83,7 @@ const courseColors = [
 const colorMap = new Map<string, { bg: string; border: string; text: string }>();
 
 function hashCode(str: string): number {
+  if (!str) return 0; // Handle undefined/null
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
     const char = str.charCodeAt(i);
@@ -90,6 +96,11 @@ function hashCode(str: string): number {
 export function getCourseColor(
   courseCode: string
 ): { bg: string; border: string; text: string } {
+  if (!courseCode) {
+    // Default color if courseCode is undefined
+    return courseColors[0];
+  }
+  
   if (colorMap.has(courseCode)) {
     return colorMap.get(courseCode)!;
   }
@@ -101,10 +112,26 @@ export function getCourseColor(
 }
 
 export function formatTime(hour: number): string {
-  if (hour === 0) return '12 AM';
-  if (hour < 12) return `${hour} AM`;
-  if (hour === 12) return '12 PM';
-  return `${hour - 12} PM`;
+  // Handle fractional hours (e.g., 10.67 for 10:40)
+  const wholeHour = Math.floor(hour);
+  const minutes = Math.round((hour - wholeHour) * 60);
+  
+  let displayHour = wholeHour;
+  let period = 'AM';
+  
+  if (wholeHour === 0) {
+    displayHour = 12;
+  } else if (wholeHour === 12) {
+    period = 'PM';
+  } else if (wholeHour > 12) {
+    displayHour = wholeHour - 12;
+    period = 'PM';
+  }
+  
+  if (minutes === 0) {
+    return `${displayHour} ${period}`;
+  }
+  return `${displayHour}:${minutes.toString().padStart(2, '0')} ${period}`;
 }
 
 export function getDayNumber(day: string): number {
