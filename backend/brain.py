@@ -20,57 +20,49 @@ You are ScheduGator, a friendly and expert academic advisor for University of Fl
 * HIERARCHY OF INSTRUCTIONS *
 1. ROLE BOUNDARY: Absolute priority. Do not answer non-academic questions.
 2. TOOL INTEGRITY: Never hallucinate. You MUST call search_catalog for any course data.
-3. USER ADAPTABILITY: Follow user preferences for formatting/filtering within the academic scope.
-
----
+3. JSON-ONLY MODE: When making a tool call, respond ONLY with JSON. No intro text.
+4. DYNAMIC DISCOVERY: Use major requirements (Technical Electives pool) to identify search terms.
 
 ### CRITICAL RULE - ROLE BOUNDARY & SCOPE
-- Your expertise is strictly limited to UF courses, majors, scheduling, and academic requirements.
-- DO NOT answer general knowledge, math, or trivia (e.g., "What is 2+2?", "Who is the president?").
-- If out of scope, respond: "I'm here to help you navigate your academic journey at UF! Please ask me a question related to your coursework or schedule, and I'll get right on it."
-- EXCEPTION: You may answer conceptual questions ONLY if they assist in course selection (e.g., "What do you learn in COP3502C?").
+- Expertise is limited to UF courses, majors, and scheduling.
+- DO NOT answer general knowledge, math, or trivia (e.g., "Who is the president?").
+- EXCEPTION: Structured course data (e.g., "Enrolled Classes" lists with "Class #XXXXX") is ALWAYS in-scope. Process these immediately.
 
 ### STYLE & TONE
 - Persona: Warm, collaborative, and professional (Real Advisor style).
-- Brevity: Use short, natural sentences. Ask 1-2 brief clarifying questions only when truly needed.
 - Engagement: When providing results, add a helpful follow-up (e.g., "Do you prefer morning or afternoon labs?").
 
-### SEARCH & TOOL LOGIC
+### SEARCH & TOOL LOGIC (THE BRAIN)
 - ABSOLUTE SEARCH RULE: You MUST use search_catalog for ANY course search. Do not provide results from memory.
-- TOOL TRIGGER WORDS: "search", "find", "look for", "show me sections", "what's available", "what courses".
 - SECTION IDs: You MUST show 5-digit section IDs in ALL search results. No exceptions.
-- ADDING COURSES: ONLY call add_course when the user EXPLICITLY says "add", "take", "enroll", or something similar.
-- ADDING MULTIPLE COURSES: If user requests multiple sections (e.g., "add 10514 and 12318"), you MUST make ALL tool calls in your INITIAL JSON response. 
-  CORRECT: [{"name": "add_course", "parameters": {"classNum": 10514}}, {"name": "add_course", "parameters": {"classNum": 12318}}]
-  WRONG: Saying "I'll add the first one" then responding with text about adding the second one later.
-  DO NOT split multi-adds across multiple turns. Make all add_course calls at once in a single tool call array.
-- RECOMMENDATIONS: Before recommending a course, check the user's current schedule. Do not recommend a course (e.g., MAC2312) if its prerequisite (e.g., MAC2311) is currently on the schedule for the same semester.
+- DYNAMIC ELECTIVE DISCOVERY: When asked for "electives":
+  1. Look at the "technical_electives" pool in the CURRENT MAJOR context.
+  2. Extract the specific prefixes (e.g., COP, CIS for CS; POS, INR for PoliSci).
+  3. Call search_catalog using the "queries" parameter with these specific prefixes.
+  4. Force min_level=3000 to avoid intro courses.
+- NO KEYWORDS: NEVER use generic query strings like "CS" or "Math" in search_catalog.
+SEARCH RELAXATION RULE: If a user asks for multiple requirements (e.g., International + Diversity), search for them individually or in smaller groups first. Technical electives NEVER "triple-dip" across non-STEM requirements.
 
----
-
-### MAJOR CONTEXT & GOLD RULES
-- CRITICAL TRACKING: Highlight "Critical Tracking" (Gold) courses—these are essential GPA gates for the student's major.
-- ELECTIVES: When searching "electives", prioritize the technical_electives pool.
-- CODES: Major codes (CPS, CPE) are NOT departments—do not use them as "dept" filters in search_catalog.
+### BULK ENROLLMENT PARSING (CRITICAL)
+- When a user pastes "Enrolled Classes" data with multiple "Class #XXXXX" sections:
+  1. SCAN the text for ALL instances of "Class #" followed by digits.
+  2. EXTRACT every single class number.
+  3. Include ALL of them in a SINGLE tool_calls array response.
+  4. NEVER provide partial additions. Add them ALL in one JSON response.
 
 ### UNIVERSAL UF REQUIREMENTS (Boolean Filters)
-Always use search_catalog with these boolean flags for general requirement questions:
-1. Civic Literacy: use `civicLiteracy: true` for POS2041 or AMH2020 queries.
-2. International (I): use `international: true` for non-US topic queries.
-3. Diversity (D): use `diversity: true` for race/gender/cultural perspective queries.
-4. Writing: use `min_words: 2000/4000/6000` as requested.
-5. Quest: use `quest: "Quest 1"` (or 2/3).
-
----
+Always use search_catalog with these boolean flags for general requirements:
+1. Civic Literacy: civicLiteracy: true.
+2. International (I): international: true.
+3. Diversity (D): diversity: true.
+4. Writing: min_words: 2000/4000/6000.
+5. Quest: quest: "Quest 1" (or 2/3).
 
 ### FORMATTING & JSON RULES
-- ADAPTABILITY: Within scope, follow user formatting (e.g., "Just show titles" or "Organize by time").
-- DEFAULT FORMAT: * Section [ID]: [Course Code] - [Instructor] - [Days/Times] ([Building/Room])
-- JSON PROTOCOL: If calling function(s), respond ONLY with the JSON:
-  Single call: {"name": "function_name", "parameters": {"arg": "value"}}
-  Multiple calls: {"tool_calls": [{"name": "add_course", "parameters": {"classNum": 10509}}, {"name": "add_course", "parameters": {"classNum": 13780}}]}
-- POST-TOOL: After receiving tool results, respond ONLY with plain helpful text. NEVER return empty JSON or tool result logs.
-
+- JSON-ONLY MODE: If calling a function, respond ONLY with the JSON block. Do NOT include phrases like "I can help with that".
+- Single call: {"name": "function_name", "parameters": {"arg": "value"}}
+- Multiple calls: {"tool_calls": [{"name": "add_course", "parameters": {"classNum": 10509}}, ...]}
+- POST-TOOL: After receiving tool results, respond ONLY with plain helpful text.
 Available Functions:
 [
   {
@@ -226,13 +218,26 @@ class GemmaBrain:
         """
         try:
             parsed = json.loads(text)
+            print(f"✅ JSON Parsed successfully. Type: {type(parsed)}")
+            
             if isinstance(parsed, dict):
-                if parsed.get("tool_calls") == []:
-                    return None, text
+                print(f"   Dict keys: {list(parsed.keys())}")
+                # If dict has "tool_calls" key, unwrap and return the actual call list
+                if "tool_calls" in parsed:
+                    tool_calls_list = parsed.get("tool_calls")
+                    print(f"   Found 'tool_calls' key with {len(tool_calls_list)} items")
+                    if tool_calls_list == []:
+                        return None, text
+                    print(f"   ✅ Returning unwrapped tool_calls list: {len(tool_calls_list)} calls")
+                    return tool_calls_list, ""
+                # Otherwise return the dict as a single call (shouldn't happen, but keep for compatibility)
+                print(f"   No 'tool_calls' key, wrapping dict as single call")
                 return [parsed], ""
             if isinstance(parsed, list):
+                print(f"   Parsed as list with {len(parsed)} items")
                 return parsed, ""
-        except json.JSONDecodeError:
+        except json.JSONDecodeError as e:
+            print(f"❌ JSON parse failed: {e}")
             pass
 
         calls = []
@@ -249,11 +254,18 @@ class GemmaBrain:
                 if stack:
                     continue
                 chunk = text[start:i + 1]
-                if '"name"' not in chunk:
+                if '"name"' not in chunk and '"tool_calls"' not in chunk:
                     continue
                 try:
                     call = json.loads(chunk)
-                    calls.append(call)
+                    if isinstance(call, dict) and "tool_calls" in call:
+                        tool_calls_list = call.get("tool_calls") or []
+                        if tool_calls_list:
+                            calls.extend(tool_calls_list)
+                    elif isinstance(call, list):
+                        calls.extend(call)
+                    else:
+                        calls.append(call)
                 except json.JSONDecodeError:
                     continue
 
@@ -470,6 +482,11 @@ class GemmaBrain:
         # 2. Resolve tool calls (including chained calls) with a small loop
         response_text = response.text
         
+        # Strip markdown code fences if present (model might wrap JSON in ```json...```)
+        response_text = re.sub(r'^\s*```(?:json)?\s*', '', response_text)
+        response_text = re.sub(r'\s*```\s*$', '', response_text)
+        print(f"📝 After stripping markdown: {response_text[:100]}...")
+        
         # Check if response already contains the marker with courses (early exit if successful)
         marker_match = re.search(r'__COURSES_ADDED_(.*?)__COURSES_ADDED__', response_text)
         if marker_match:
@@ -548,6 +565,8 @@ class GemmaBrain:
             search_calls = [call for call in calls if call.get("name") == "search_catalog"]
             add_course_calls = [call for call in calls if call.get("name") == "add_course"]
             
+            print(f"🔍 Extracted {len(calls)} total calls: {len(search_calls)} search, {len(add_course_calls)} add_course")
+            
             # Handle batched search_catalog calls
             if len(search_calls) > 1:
                 queries = []
@@ -581,10 +600,36 @@ class GemmaBrain:
                 # Handle individual calls (search_catalog or add_course)
                 for call in calls:
                     if call.get("name") == "search_catalog":
-                        result = self.search_catalog_tool(**call.get("parameters", {}))
+                        params = call.get("parameters", {})
+                        query = params.get("query", "")
+                        
+                        # Auto-expand "technical electives" to CISE prefixes + explicit codes
+                        if query and re.search(r'\b(technical\s+)?electives?\b', query, re.IGNORECASE):
+                            print(f"🤖 Detected 'technical electives' query - auto-expanding to CISE prefixes")
+                            tech_electives = (self.last_major_rules or {}).get("technical_electives", {})
+                            
+                            # Get explicit allowed codes from tech_electives dict
+                            explicit_codes = []
+                            if isinstance(tech_electives, dict):
+                                explicit_codes = tech_electives.get("explicit_allowed_codes", [])
+                            
+                            # CISE department prefixes ONLY
+                            cise_prefixes = ["COP", "CEN", "CIS", "CNT", "CDA", "CAP", "COT"]
+                            
+                            # Transform parameters to use queries list
+                            params = {
+                                **params,
+                                "query": None,
+                                "queries": cise_prefixes + explicit_codes,
+                                "min_level": params.get("min_level") or 4000,
+                                "dept": None,  # Remove dept filter since we're using prefixes
+                            }
+                            print(f"✅ Expanded to queries: {params['queries']}")
+                        
+                        result = self.search_catalog_tool(**params)
                         tool_results.append({
                             "name": call.get("name"),
-                            "parameters": call.get("parameters", {}),
+                            "parameters": params,
                             "result": result
                         })
                     elif call.get("name") == "add_course":
