@@ -373,34 +373,16 @@ export function App() {
           }
 
           const today = new Date();
-          const startDate = new Date(today);
-          const day = startDate.getDay();
-          const daysToMonday = (1 - day + 7) % 7;
-          startDate.setDate(startDate.getDate() + daysToMonday);
-
-          const endDate = new Date(startDate);
-          endDate.setDate(endDate.getDate() + 7 * 16);
-
-          const startDefault = `${startDate.getFullYear()}-${String(startDate.getMonth() + 1).padStart(2, '0')}-${String(startDate.getDate()).padStart(2, '0')}`;
-          const endDefault = `${endDate.getFullYear()}-${String(endDate.getMonth() + 1).padStart(2, '0')}-${String(endDate.getDate()).padStart(2, '0')}`;
-
-          const startInput = window.prompt('Enter semester start date (YYYY-MM-DD):', startDefault);
-          if (!startInput) return;
-          const endInput = window.prompt('Enter semester end date (YYYY-MM-DD):', endDefault);
-          if (!endInput) return;
-
-          const parsedStart = new Date(`${startInput}T00:00:00`);
-          const parsedEnd = new Date(`${endInput}T00:00:00`);
-
-          if (Number.isNaN(parsedStart.getTime()) || Number.isNaN(parsedEnd.getTime())) {
-            alert('Invalid date format. Please use YYYY-MM-DD.');
-            return;
+          let year = today.getFullYear();
+          
+          // Use next year's January if we're past April 22
+          const aprilEnd = new Date(year, 3, 22);
+          if (today > aprilEnd) {
+            year = today.getFullYear() + 1;
           }
 
-          if (parsedEnd <= parsedStart) {
-            alert('End date must be after the start date.');
-            return;
-          }
+          const parsedStart = new Date(`${year}-01-12T00:00:00`);
+          const parsedEnd = new Date(`${year}-04-22T00:00:00`);
 
           const icsContent = buildIcs(schedule, {
             startDate: parsedStart,
